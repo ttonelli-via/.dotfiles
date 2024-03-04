@@ -1,0 +1,16 @@
+"$schema" = 'https://starship.rs/config-schema.json'
+
+[character]
+vicmd_symbol = "[](green)"
+
+[git_branch]
+symbol = " "
+
+[package]
+disabled = true
+
+[aws]
+disabled = true
+
+[docker_context]
+disabled = true

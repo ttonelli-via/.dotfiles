@@ -1,0 +1,6 @@
+!.rgignore
+!.github
+!.config
+!.zshenv
+!.zshrc
+!.zprofile

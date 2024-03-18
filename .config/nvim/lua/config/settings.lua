@@ -40,9 +40,6 @@ vim.o.termguicolors = true
 -- Enable mouse mode
 vim.o.mouse = "a"
 
--- Sync clipboard between OS and Neovim.
--- vim.o.clipboard = 'unnamedplus'
-
 -- Decrease update time
 vim.o.updatetime = 250
 vim.o.timeout = true

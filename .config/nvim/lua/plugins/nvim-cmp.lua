@@ -3,7 +3,7 @@ return {
     event = "InsertEnter",
     dependencies = {
         "hrsh7th/cmp-nvim-lsp",
-        "L3MON4D3/LuaSnip",         -- snippet engine
+        "L3MON4D3/LuaSnip", -- snippet engine
         "saadparwaiz1/cmp_luasnip", -- for autocompletion
     },
     config = function()
@@ -29,11 +29,10 @@ return {
                 ["<C-p>"] = cmp.mapping.select_prev_item(),
                 ["<C-u>"] = cmp.mapping.scroll_docs(-4),
                 ["<C-d>"] = cmp.mapping.scroll_docs(4),
-                ["<C-Space>"] = cmp.mapping.complete({}),
-                -- ["<CR>"] = cmp.mapping.confirm({
-                --     behavior = cmp.ConfirmBehavior.Replace,
-                --     select = true,
-                -- }),
+                ["<CR>"] = cmp.mapping.confirm({
+                    behavior = cmp.ConfirmBehavior.Replace,
+                    select = true,
+                }),
                 ["<Tab>"] = cmp.mapping(function(fallback)
                     if cmp.visible() then
                         cmp.select_next_item()
@@ -55,8 +54,8 @@ return {
             }),
             sources = {
                 { name = "nvim_lsp" }, -- lsp
-                { name = "crates" },   -- rust crates
-                { name = "luasnip" },  -- snippets
+                { name = "crates" }, -- rust crates
+                { name = "luasnip" }, -- snippets
             },
         })
     end,

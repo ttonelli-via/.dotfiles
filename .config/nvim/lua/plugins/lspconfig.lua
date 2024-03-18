@@ -2,13 +2,13 @@ return {
     "neovim/nvim-lspconfig",
     event = { "BufReadPre", "BufNewFile" },
     dependencies = {
+        "williamboman/mason-lspconfig.nvim",
         "hrsh7th/cmp-nvim-lsp",
         "j-hui/fidget.nvim",
         { "folke/neodev.nvim", opts = {} },
     },
     config = function()
-        -- Configures lua_ls for writing Neovim configuration
-        require("neodev").setup()
+        require("neodev").setup() -- Configures lua_ls for writing Neovim configuration
 
         local lspconfig = require("lspconfig")
         local cmp_nvim_lsp = require("cmp_nvim_lsp")
@@ -31,18 +31,13 @@ return {
             group = vim.api.nvim_create_augroup("LspKeybinds", { clear = true }),
             callback = function(event)
                 vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, { buffer = event.buf, desc = "[R]e[n]ame" })
-                vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action,
-                    { buffer = event.buf, desc = "[C]ode [A]ction" })
+                vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, { buffer = event.buf, desc = "[C]ode [A]ction" })
 
                 vim.keymap.set("n", "gd", vim.lsp.buf.definition, { buffer = event.buf, desc = "[G]oto [D]efinition" })
-                vim.keymap.set("n", "gr", require("telescope.builtin").lsp_references,
-                    { buffer = event.buf, desc = "[G]oto [R]eferences" })
-                vim.keymap.set("n", "gi", vim.lsp.buf.implementation,
-                    { buffer = event.buf, desc = "[G]oto [I]mplementation" })
-                vim.keymap.set("n", "<leader>td", vim.lsp.buf.type_definition,
-                    { buffer = event.buf, desc = "[T]ype [D]efinition" })
-                vim.keymap.set("n", "<leader>ds", require("telescope.builtin").lsp_document_symbols,
-                    { buffer = event.buf, desc = "[D]ocument [S]ymbols" })
+                vim.keymap.set("n", "gr", require("telescope.builtin").lsp_references, { buffer = event.buf, desc = "[G]oto [R]eferences" })
+                vim.keymap.set("n", "gi", vim.lsp.buf.implementation, { buffer = event.buf, desc = "[G]oto [I]mplementation" })
+                vim.keymap.set("n", "<leader>td", vim.lsp.buf.type_definition, { buffer = event.buf, desc = "[T]ype [D]efinition" })
+                vim.keymap.set("n", "<leader>ds", require("telescope.builtin").lsp_document_symbols, { buffer = event.buf, desc = "[D]ocument [S]ymbols" })
                 vim.keymap.set(
                     "n",
                     "<leader>ws",
@@ -52,23 +47,20 @@ return {
 
                 vim.keymap.set("n", "K", vim.lsp.buf.hover, { buffer = event.buf, desc = "Hover Documentation" })
                 -- TODO: find a better keybind for this
-                vim.keymap.set("n", "<C-s>", vim.lsp.buf.signature_help,
-                    { buffer = event.buf, desc = "Signature Documentation" })
+                vim.keymap.set("n", "<C-s>", vim.lsp.buf.signature_help, { buffer = event.buf, desc = "Signature Documentation" })
 
                 local filetype = vim.filetype.match({ buf = event.buf })
 
                 -- python specific keymaps
                 -- TODO: make a snippet
                 if filetype == "python" then
-                    vim.keymap.set("n", "<leader>nm", 'iif __name__ == "__main__":<CR>',
-                        { buffer = event.buf, desc = "if [N]ame == [M]ain" })
+                    vim.keymap.set("n", "<leader>nm", 'iif __name__ == "__main__":<CR>', { buffer = event.buf, desc = "if [N]ame == [M]ain" })
                 end
 
                 -- go specific keymaps
                 -- TODO: make a snippet
                 if filetype == "go" then
-                    vim.keymap.set("n", "<leader>he", "iif err != nil{<CR>",
-                        { buffer = event.buf, desc = "[H]andle [E]rror" })
+                    vim.keymap.set("n", "<leader>he", "iif err != nil{<CR>", { buffer = event.buf, desc = "[H]andle [E]rror" })
                 end
             end,
         })
@@ -81,8 +73,7 @@ return {
             ["textDocument/signatureHelp"] = vim.lsp.with(vim.lsp.handlers.signature_help, { border = "rounded" }),
         }
 
-        local mason_lspconfig = require("mason-lspconfig")
-        mason_lspconfig.setup_handlers({
+        require("mason-lspconfig").setup_handlers({
             -- Default handler for all servers
             function(server_name)
                 lspconfig[server_name].setup({
@@ -96,18 +87,17 @@ return {
             lua_ls = function()
                 lspconfig.lua_ls.setup({
                     capabilities = lsp_capabilities,
+                    handlers = vim.tbl_deep_extend("force", {}, default_handlers),
                     settings = { -- custom settings for lua
                         Lua = {
                             -- make the language server recognize "vim" global
                             diagnostics = {
                                 globals = { "vim" },
+                                disable = { "missing-fields" },
                             },
                             workspace = {
                                 -- make language server aware of runtime files
-                                library = {
-                                    [vim.fn.expand("$VIMRUNTIME/lua")] = true,
-                                    [vim.fn.stdpath("config") .. "/lua"] = true,
-                                },
+                                library = { vim.env.VIMRUNTIME },
                             },
                         },
                     },

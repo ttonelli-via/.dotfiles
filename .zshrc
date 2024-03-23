@@ -19,6 +19,7 @@ source $PLUGINDIR/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 export ZVM_VI_HIGHLIGHT_FOREGROUND=default
 export ZVM_VI_HIGHLIGHT_BACKGROUND="#44475a"
 
+# FZF settings
 export FZF_DEFAULT_OPTS="\
 	--color fg:#f8f8f2,bg:#282a36,hl:#bd93f9 \
 	--color fg+:#f8f8f2,bg+:#44475a,gutter:#282a36,hl+:#bd93f9 \
@@ -28,15 +29,18 @@ export FZF_DEFAULT_OPTS="\
 "
 export FZF_TMUX_OPTS="$FZF_DEFAULT_OPTS"
 
+# Zoxide settings
+export _ZO_DATA_DIR="$HOME/.local/share"
+export _ZO_RESOLVE_SYMLINKS=1
+export _ZO_FZF_OPTS="$FZF_DEFAULT_OPTS"
+
 # Fast Node Manager setup
 eval "$(fnm env --use-on-cd)"
 
-# bun completions
+# Bun
 [ -s "/Users/timtonelli/.bun/_bun" ] && source "/Users/timtonelli/.bun/_bun"
-
-# bun
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
 
-# Starship (Must be at the end)
 eval "$(starship init zsh)"
+eval "$(zoxide init zsh --cmd cd)"

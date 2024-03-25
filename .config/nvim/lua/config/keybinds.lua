@@ -11,6 +11,10 @@ vim.keymap.set("n", "j", "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = tr
 vim.keymap.set("v", "J", ":m '>+1<CR>gv=gv", { desc = "Move selection down" })
 vim.keymap.set("v", "K", ":m '<-2<CR>gv=gv", { desc = "Move selection up" })
 
+-- Keep selection selected after shifting indents
+vim.keymap.set("v", ">", ">gv", { desc = "Go to previous selection after indenting in" })
+vim.keymap.set("v", "<", "<gv", { desc = "Go to previous selection after indenting out" })
+
 -- Yank to system clipboard
 vim.keymap.set({ "n", "v" }, "<leader>y", [["+y]])
 vim.keymap.set("n", "<leader>Y", [["+Y]])

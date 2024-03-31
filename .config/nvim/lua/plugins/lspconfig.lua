@@ -44,7 +44,7 @@ return {
                     require("telescope.builtin").lsp_dynamic_workspace_symbols,
                     { buffer = event.buf, desc = "[W]orkspace [S]ymbols" }
                 )
-
+                vim.keymap.set("n", "<leader>rs", "<CMD>LspRestart<CR>", { buffer = event.buf, desc = "LSP [R]e[s]tart" })
                 vim.keymap.set("n", "K", vim.lsp.buf.hover, { buffer = event.buf, desc = "Hover Documentation" })
                 -- TODO: find a better keybind for this
                 vim.keymap.set("n", "<C-s>", vim.lsp.buf.signature_help, { buffer = event.buf, desc = "Signature Documentation" })

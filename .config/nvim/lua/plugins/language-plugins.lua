@@ -11,6 +11,7 @@ return {
                     on_attach = function(_, bufnr)
                         vim.keymap.set("n", "<leader>xp", "<CMD>RustLsp expandMacro<CR>", { buffer = bufnr, desc = "E[xp]and Macro" })
                         vim.keymap.set("n", "<leader>rp", "<CMD>RustLsp rebuildProcMacros<CR>", { buffer = bufnr, desc = "[R]ebuild [P]roc Macros" })
+                        vim.keymap.set("n", "<leader>rs", "<CMD>RustAnalyzer restart<CR>", { buffer = bufnr, desc = "Rust Analyzer [R]e[s]tart" })
                     end,
                 },
             }

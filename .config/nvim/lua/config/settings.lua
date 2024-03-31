@@ -11,6 +11,9 @@ vim.o.smartindent = true
 vim.opt.nu = true
 vim.opt.relativenumber = true
 
+-- Splits
+vim.opt.splitright = true
+
 -- Line wrap
 vim.opt.wrap = false
 

@@ -34,6 +34,12 @@ export VOLTA_HOME="$HOME/.volta"
 export GOPATH="$HOME/go"
 export PATH="$HOME/.local/bin:$PATH"
 
+export PATH="/Users/timtonelli/.local/bin:$PATH"
+export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
+
+export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
+export DISABLE_SPRING=true
+
 # Aliases
 alias ls="ls --color"
 
@@ -77,6 +83,26 @@ export FZF_CTRL_R_OPTS="
 export _ZO_DATA_DIR="$HOME/.local/share"
 export _ZO_RESOLVE_SYMLINKS=1
 export _ZO_FZF_OPTS="$FZF_DEFAULT_OPTS"
+
+# Get VIA's gemfury token
+function gemfury {
+  if ! [ $GEMFURY_TOKEN ]; then
+    export GEMFURY_TOKEN=$(aws secretsmanager \
+      --profile identity \
+      --region ca-central-1 get-secret-value \
+      --secret-id arn:aws:secretsmanager:ca-central-1:977445517197:secret:gemfury_read_only_token-vDqyeo \
+      --query SecretString \
+      --output text | jq -r .data)
+  fi
+
+  echo $GEMFURY_TOKEN
+}
+
+function srcenv {
+  if [ $1 ]; then FILE=$1; else FILE=.env; fi
+
+  export $(cat $FILE | xargs)
+}
 
 eval "$(pyenv init --path)"
 

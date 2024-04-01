@@ -19,16 +19,8 @@ return {
             },
         },
         config = function()
-            require("telescope").setup({
-                defaults = {
-                    mappings = {
-                        i = {
-                            ["<C-u>"] = false,
-                            ["<C-d>"] = false,
-                        },
-                    },
-                },
-            })
+            local telescope = require("telescope")
+            telescope.setup({})
 
             pcall(require("telescope").load_extension, "ui-select")
             pcall(require("telescope").load_extension, "fzf")

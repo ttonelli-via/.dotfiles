@@ -1,0 +1,26 @@
+################################################################################
+#	Documentation at														   #
+#		https://github.com/mitchellh/ghostty/blob/main/src/config/Config.zig   #
+################################################################################
+
+theme = Dracula
+background = "#292a34"
+
+font-family = FiraCode Nerd Font
+
+font-feature = -calt
+font-feature = -clig
+font-feature = -liga
+font-feature = cv10
+font-feature = cv16
+
+font-size = 15
+
+adjust-cell-width = -5%
+adjust-cell-height = 20%
+
+macos-titlebar-tabs = true
+macos-option-as-alt = true
+
+mouse-hide-while-typing = true
+window-save-state = always

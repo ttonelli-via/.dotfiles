@@ -7,6 +7,8 @@ export PLUGINDIR=$HOME/.zsh/plugins
 export DEV=$HOME/Development
 export CONFIG=$HOME/.config
 export DOTFILES=$HOME/.dotfiles
+export VOLTA_HOME="$HOME/.volta"
+export PATH="$VOLTA_HOME/bin:$PATH"
 
 # Aliases
 alias nv="nvim"
@@ -33,9 +35,6 @@ export FZF_TMUX_OPTS="$FZF_DEFAULT_OPTS"
 export _ZO_DATA_DIR="$HOME/.local/share"
 export _ZO_RESOLVE_SYMLINKS=1
 export _ZO_FZF_OPTS="$FZF_DEFAULT_OPTS"
-
-# Fast Node Manager setup
-eval "$(fnm env --use-on-cd)"
 
 # Bun
 [ -s "/Users/timtonelli/.bun/_bun" ] && source "/Users/timtonelli/.bun/_bun"

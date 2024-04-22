@@ -16,11 +16,16 @@ palette = 8=#7c7f8a
 
 font-family = FiraCode Nerd Font
 
+# Disable ligatures
 font-feature = -calt
 font-feature = -clig
 font-feature = -liga
-font-feature = cv10
-font-feature = cv16
+
+# alternate 'l'
+font-feature = cv10  
+
+# center aligned '*'
+font-feature = cv16  
 
 font-size = 15
 
@@ -32,3 +37,4 @@ macos-option-as-alt = true
 
 mouse-hide-while-typing = true
 window-save-state = always
+window-step-resize = true

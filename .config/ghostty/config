@@ -4,7 +4,15 @@
 ################################################################################
 
 theme = Dracula
-background = "#292a34"
+
+# Override values to match Dracula Soft
+background = "#292a35"
+
+# Override Black value to Red value
+palette = 0=#ff5555
+
+# Override Bright Black value to match Bright Black value in Dracula Soft
+palette = 8=#7c7f8a
 
 font-family = FiraCode Nerd Font
 

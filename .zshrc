@@ -22,14 +22,30 @@ export ZVM_VI_HIGHLIGHT_FOREGROUND=default
 export ZVM_VI_HIGHLIGHT_BACKGROUND="#44475a"
 
 # FZF settings
-export FZF_DEFAULT_OPTS="\
-	--color fg:#f8f8f2,bg:#282a36,hl:#bd93f9 \
-	--color fg+:#f8f8f2,bg+:#44475a,gutter:#282a36,hl+:#bd93f9 \
-	--color info:#ffb86c,prompt:#50fa7b,pointer:#ff79c6 \
-	--color marker:#ff79c6,spinner:#ffb86c,header:#6272a4 \
-	--no-bold \
+eval "$(fzf --zsh)"
+
+export FZF_COMPLETION_TRIGGER="**" # **<TAB> to trigger completions
+export FZF_COMPLETION_OPTS="
+    --info=inline
+    --no-scrollbar
+"
+
+export FZF_DEFAULT_OPTS="
+    --color fg:#f8f8f2,bg:#282a36,hl:#bd93f9
+    --color fg+:#f8f8f2,bg+:#44475a,gutter:#282a36,hl+:#bd93f9
+    --color info:#ffb86c,prompt:#50fa7b,pointer:#ff79c6
+    --color marker:#ff79c6,spinner:#ffb86c,header:#6272a4
+    --no-bold
 "
 export FZF_TMUX_OPTS="$FZF_DEFAULT_OPTS"
+
+export FZF_CTRL_R_OPTS="
+    --preview 'echo {}' --preview-window up:3:hidden:wrap
+    --bind 'ctrl-/:toggle-preview'
+    --bind 'ctrl-y:execute-silent(echo -n {2..} | pbcopy)+abort'
+    --header 'Press CTRL-Y to copy command into clipboard'
+    --no-scrollbar
+"
 
 # Zoxide settings
 export _ZO_DATA_DIR="$HOME/.local/share"
@@ -41,5 +57,5 @@ export _ZO_FZF_OPTS="$FZF_DEFAULT_OPTS"
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
 
-eval "$(starship init zsh)"
 eval "$(zoxide init zsh --cmd cd)"
+eval "$(starship init zsh)"

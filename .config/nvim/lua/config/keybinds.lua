@@ -18,3 +18,7 @@ vim.keymap.set("v", "<", "<gv", { desc = "Go to previous selection after indenti
 -- Yank to system clipboard
 vim.keymap.set({ "n", "v" }, "<leader>y", [["+y]])
 vim.keymap.set("n", "<leader>Y", [["+Y]])
+
+-- Quickfix list navigation
+vim.keymap.set("n", "[q", "<CMD>cprev<CR>", { desc = "Go to previous quickfix list entry" })
+vim.keymap.set("n", "]q", "<CMD>cnext<CR>", { desc = "Go to next quickfix list entry" })

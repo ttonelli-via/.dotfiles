@@ -1,5 +1,4 @@
 # Options -- https://zsh.sourceforge.io/Doc/Release/Options.html
-setopt autocd
 setopt histignoredups
 
 # Variables
@@ -56,6 +55,8 @@ export _ZO_FZF_OPTS="$FZF_DEFAULT_OPTS"
 [ -s "/Users/timtonelli/.bun/_bun" ] && source "/Users/timtonelli/.bun/_bun"
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
+
+eval "$(pyenv init --path)"
 
 eval "$(zoxide init zsh --cmd cd)"
 eval "$(starship init zsh)"

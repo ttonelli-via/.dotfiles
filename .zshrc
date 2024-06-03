@@ -1,5 +1,29 @@
-# Options -- https://zsh.sourceforge.io/Doc/Release/Options.html
-setopt histignoredups
+# History
+HISTSIZE=5000
+HISTFILE=~/.zsh_history
+SAVEHIST=$HISTSIZE
+HISTDUP=erase
+
+setopt appendhistory
+setopt sharehistory
+setopt hist_ignore_space
+setopt hist_ignore_all_dups
+setopt hist_save_no_dups
+setopt hist_ignore_dups
+setopt hist_find_no_dups
+
+# Keybinds
+bindkey -e
+bindkey "^p" history-search-backward
+bindkey "^n" history-search-forward
+
+# Completions
+autoload -U compinit; compinit
+
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+zstyle ':completion:*' menu no
+zstyle ':fzf-tab:complete:cd:*' fzf-preview 'ls --color $realpath'
 
 # Variables
 export PLUGINDIR=$HOME/.zsh/plugins
@@ -8,15 +32,20 @@ export CONFIG=$HOME/.config
 export DOTFILES=$HOME/.dotfiles
 export VOLTA_HOME="$HOME/.volta"
 export PATH="$VOLTA_HOME/bin:$PATH"
+export GOPATH="$HOME/go"
+export PATH="$GOPATH/bin:$PATH"
 
 # Aliases
+alias ls="ls --color"
 alias nv="nvim"
 
 # Plugins
 source $PLUGINDIR/zsh-vi-mode/zsh-vi-mode.plugin.zsh
-source $PLUGINDIR/zsh-autosuggestions/zsh-autosuggestions.zsh
+source $PLUGINDIR/fzf-tab/fzf-tab.plugin.zsh
 source $PLUGINDIR/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+source $PLUGINDIR/zsh-autosuggestions/zsh-autosuggestions.zsh
 
+# Zsh Vim Mode settings
 export ZVM_VI_HIGHLIGHT_FOREGROUND=default
 export ZVM_VI_HIGHLIGHT_BACKGROUND="#44475a"
 

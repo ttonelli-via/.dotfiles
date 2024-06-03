@@ -32,22 +32,16 @@ return {
             callback = function(event)
                 vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, { buffer = event.buf, desc = "[R]e[n]ame" })
                 vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, { buffer = event.buf, desc = "[C]ode [A]ction" })
-
                 vim.keymap.set("n", "gd", vim.lsp.buf.definition, { buffer = event.buf, desc = "[G]oto [D]efinition" })
                 vim.keymap.set("n", "gr", require("telescope.builtin").lsp_references, { buffer = event.buf, desc = "[G]oto [R]eferences" })
                 vim.keymap.set("n", "gi", vim.lsp.buf.implementation, { buffer = event.buf, desc = "[G]oto [I]mplementation" })
                 vim.keymap.set("n", "<leader>td", vim.lsp.buf.type_definition, { buffer = event.buf, desc = "[T]ype [D]efinition" })
-                vim.keymap.set("n", "<leader>ds", require("telescope.builtin").lsp_document_symbols, { buffer = event.buf, desc = "[D]ocument [S]ymbols" })
-                vim.keymap.set(
-                    "n",
-                    "<leader>ws",
-                    require("telescope.builtin").lsp_dynamic_workspace_symbols,
-                    { buffer = event.buf, desc = "[W]orkspace [S]ymbols" }
-                )
                 vim.keymap.set("n", "<leader>rs", "<CMD>LspRestart<CR>", { buffer = event.buf, desc = "LSP [R]e[s]tart" })
                 vim.keymap.set("n", "K", vim.lsp.buf.hover, { buffer = event.buf, desc = "Hover Documentation" })
-                -- TODO: find a better keybind for this
-                vim.keymap.set("n", "<C-s>", vim.lsp.buf.signature_help, { buffer = event.buf, desc = "Signature Documentation" })
+                vim.keymap.set("i", "<C-h>", vim.lsp.buf.signature_help, { buffer = event.buf, desc = "Signature Documentation" })
+                vim.keymap.set("n", "<leader>ih", function()
+                    vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
+                end, { desc = "Toggle LSP Inlay Hints" })
 
                 local filetype = vim.filetype.match({ buf = event.buf })
 
@@ -103,6 +97,11 @@ return {
                     },
                 })
             end,
+        })
+
+        lspconfig.gleam.setup({
+            capabilities = lsp_capabilities,
+            handlers = vim.tbl_deep_extend("force", {}, default_handlers),
         })
     end,
 }

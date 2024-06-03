@@ -17,17 +17,18 @@ return {
         mason_tool_installer.setup({
             ensure_installed = {
                 -- Language Servers
-                "lua_ls",
+                "lua-language-server",
                 "gopls",
-                "tsserver",
-                "astro",
-                "html",
-                "tailwindcss",
-                "dockerls",
-                "pyright",
+                "basedpyright",
+                "typescript-language-server",
+                "astro-language-server",
+                "html-lsp",
+                "tailwindcss-language-server",
+                "dockerfile-language-server",
+                "docker-compose-language-service",
 
                 -- Formatters
-                "gofumpt",
+                "biome",
                 "prettier",
                 "black",
                 "isort",

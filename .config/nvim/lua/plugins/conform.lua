@@ -13,7 +13,7 @@ return {
                     end
                 end,
                 -- Conform will run multiple formatters sequentially
-                go = { "goimports", "gofumpt" },
+                go = { "goimports", "gofmt" },
                 -- Use a sub-list to run only the first available formatter
                 javascript = { "prettier" },
                 typescript = { "prettier" },
@@ -28,6 +28,9 @@ return {
             },
             -- These options will be passed to conform.format()
             format_on_save = { timeout_ms = 500, async = false, lsp_fallback = true },
+            condition = function(_, ctx)
+                return vim.fs.basename(ctx.filename) ~= "README.md"
+            end,
         })
 
         require("conform").formatters.rustfmt = {

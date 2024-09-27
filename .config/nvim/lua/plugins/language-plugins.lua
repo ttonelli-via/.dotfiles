@@ -2,9 +2,13 @@ return {
     -- Rust Plugins
     {
         "mrcjkb/rustaceanvim",
-        version = "^4",
+        version = "^5",
         ft = { "rust" },
         config = function()
+            local handlers = {
+                ["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, { border = "rounded" }),
+                ["textDocument/signatureHelp"] = vim.lsp.with(vim.lsp.handlers.signature_help, { border = "rounded" }),
+            }
             vim.g.rustaceanvim = {
                 tools = {},
                 server = {
@@ -13,6 +17,7 @@ return {
                         vim.keymap.set("n", "<leader>rp", "<CMD>RustLsp rebuildProcMacros<CR>", { buffer = bufnr, desc = "[R]ebuild [P]roc Macros" })
                         vim.keymap.set("n", "<leader>rs", "<CMD>RustAnalyzer restart<CR>", { buffer = bufnr, desc = "Rust Analyzer [R]e[s]tart" })
                     end,
+                    handlers = handlers,
                 },
             }
         end,

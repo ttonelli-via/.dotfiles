@@ -62,7 +62,7 @@ return {
         local capabilities = vim.lsp.protocol.make_client_capabilities()
         local lsp_capabilities = cmp_nvim_lsp.default_capabilities(capabilities)
 
-        local default_handlers = {
+        local handlers = {
             ["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, { border = "rounded" }),
             ["textDocument/signatureHelp"] = vim.lsp.with(vim.lsp.handlers.signature_help, { border = "rounded" }),
         }
@@ -72,7 +72,7 @@ return {
             function(server_name)
                 lspconfig[server_name].setup({
                     capabilities = lsp_capabilities,
-                    handlers = vim.tbl_deep_extend("force", {}, default_handlers),
+                    handlers = handlers,
                 })
             end,
 
@@ -81,7 +81,7 @@ return {
             lua_ls = function()
                 lspconfig.lua_ls.setup({
                     capabilities = lsp_capabilities,
-                    handlers = vim.tbl_deep_extend("force", {}, default_handlers),
+                    handlers = handlers,
                     settings = { -- custom settings for lua
                         Lua = {
                             -- make the language server recognize "vim" global
@@ -101,7 +101,7 @@ return {
 
         lspconfig.gleam.setup({
             capabilities = lsp_capabilities,
-            handlers = vim.tbl_deep_extend("force", {}, default_handlers),
+            handlers = handlers,
         })
     end,
 }

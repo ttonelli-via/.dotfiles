@@ -29,7 +29,7 @@ font-size = 15
 adjust-cell-width = -5%
 adjust-cell-height = 20%
 
-macos-titlebar-tabs = true
+macos-titlebar-style = tabs
 macos-option-as-alt = true
 
 mouse-hide-while-typing = true

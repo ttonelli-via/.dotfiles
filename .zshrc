@@ -50,7 +50,7 @@ export ZVM_VI_HIGHLIGHT_FOREGROUND=default
 export ZVM_VI_HIGHLIGHT_BACKGROUND="#44475a"
 
 # FZF settings
-eval "$(fzf --zsh)"
+zvm_after_init_commands+=('eval "$(fzf --zsh)"')
 
 export FZF_COMPLETION_TRIGGER="**" # **<TAB> to trigger completions
 export FZF_COMPLETION_OPTS="

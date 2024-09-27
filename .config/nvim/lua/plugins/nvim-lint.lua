@@ -13,7 +13,6 @@ return {
             javascriptreact = { "eslint_d" },
             typescriptreact = { "eslint_d" },
             astro = { "eslint_d" },
-            python = { "ruff" },
         }
 
         vim.api.nvim_create_autocmd({ "BufEnter", "BufWritePost", "InsertLeave" }, {

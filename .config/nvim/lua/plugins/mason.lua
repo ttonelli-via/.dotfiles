@@ -30,8 +30,6 @@ return {
                 -- Formatters
                 "biome",
                 "prettier",
-                "black",
-                "isort",
                 "stylua",
 
                 -- Linters

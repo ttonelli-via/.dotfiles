@@ -5,13 +5,7 @@ return {
         require("conform").setup({
             formatters_by_ft = {
                 lua = { "stylua" },
-                python = function(bufnr)
-                    if require("conform").get_formatter_info("ruff_format", bufnr).available then
-                        return { "ruff_format" }
-                    else
-                        return { "isort", "black" }
-                    end
-                end,
+                python = { "ruff_format" },
                 -- Conform will run multiple formatters sequentially
                 go = { "goimports", "gofmt" },
                 -- Use a sub-list to run only the first available formatter

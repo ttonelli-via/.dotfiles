@@ -34,4 +34,3 @@ macos-option-as-alt = true
 
 mouse-hide-while-typing = true
 window-save-state = always
-window-step-resize = true

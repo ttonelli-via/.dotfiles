@@ -29,6 +29,9 @@ pyenv_version_name = true
 [golang]
 symbol = " "
 
+[zig]
+symbol = " "
+
 [lua]
 symbol = " "
 style = "bold #51a0cf"

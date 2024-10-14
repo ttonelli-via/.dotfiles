@@ -27,17 +27,15 @@ zstyle ':fzf-tab:complete:cd:*' fzf-preview 'ls --color $realpath'
 
 # Variables
 export PLUGINDIR=$HOME/.zsh/plugins
-export DEV=$HOME/Development
+export DEV=$HOME/Developer
 export CONFIG=$HOME/.config
 export DOTFILES=$HOME/.dotfiles
 export VOLTA_HOME="$HOME/.volta"
-export PATH="$VOLTA_HOME/bin:$PATH"
 export GOPATH="$HOME/go"
-export PATH="$GOPATH/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
 
 # Aliases
 alias ls="ls --color"
-alias nv="nvim"
 
 # Plugins
 source $PLUGINDIR/zsh-vi-mode/zsh-vi-mode.plugin.zsh
@@ -79,11 +77,6 @@ export FZF_CTRL_R_OPTS="
 export _ZO_DATA_DIR="$HOME/.local/share"
 export _ZO_RESOLVE_SYMLINKS=1
 export _ZO_FZF_OPTS="$FZF_DEFAULT_OPTS"
-
-# Bun
-[ -s "/Users/timtonelli/.bun/_bun" ] && source "/Users/timtonelli/.bun/_bun"
-export BUN_INSTALL="$HOME/.bun"
-export PATH="$BUN_INSTALL/bin:$PATH"
 
 eval "$(pyenv init --path)"
 

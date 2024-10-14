@@ -18,6 +18,7 @@ return {
                 "luadoc",
                 "python",
                 "rust",
+                "zig",
                 "gleam",
                 "go",
                 "templ",
@@ -26,7 +27,6 @@ return {
                 "vimdoc",
                 "vim",
             },
-
             auto_install = false,
             highlight = { enable = true },
             indent = { enable = true },

@@ -23,7 +23,7 @@ return {
         require("lspconfig.ui.windows").default_options.border = "rounded"
 
         vim.diagnostic.config({
-            float = { border = "rounded" },
+            float = { border = "rounded", source = true },
         })
 
         -- LSP Related Keybinds
@@ -76,21 +76,17 @@ return {
                 })
             end,
 
-            -- Overrides for specific servers
-            rust_analyzer = function() end,
             lua_ls = function()
                 lspconfig.lua_ls.setup({
                     capabilities = lsp_capabilities,
                     handlers = handlers,
-                    settings = { -- custom settings for lua
+                    settings = {
                         Lua = {
-                            -- make the language server recognize "vim" global
                             diagnostics = {
                                 globals = { "vim" },
                                 disable = { "missing-fields" },
                             },
                             workspace = {
-                                -- make language server aware of runtime files
                                 library = { vim.env.VIMRUNTIME },
                             },
                         },
@@ -99,7 +95,17 @@ return {
             end,
         })
 
+        -- Start of configurations not managed by Mason
+        -- Rust Analyzer is installed with Rustup and initialized with https://github.com/mrcjkb/rustaceanvim
+
+        -- Part of the Gleam binary
         lspconfig.gleam.setup({
+            capabilities = lsp_capabilities,
+            handlers = handlers,
+        })
+
+        -- Installed with ZVM and matched to the compiler version being used
+        lspconfig.zls.setup({
             capabilities = lsp_capabilities,
             handlers = handlers,
         })

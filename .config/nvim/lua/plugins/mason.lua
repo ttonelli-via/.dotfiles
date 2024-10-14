@@ -7,16 +7,12 @@ return {
         local mason = require("mason")
         local mason_tool_installer = require("mason-tool-installer")
 
-        -- enable mason
         mason.setup({
-            ui = {
-                border = "rounded",
-            },
+            ui = { border = "rounded" },
         })
 
         mason_tool_installer.setup({
             ensure_installed = {
-                -- Language Servers
                 "lua-language-server",
                 "gopls",
                 "basedpyright",
@@ -26,13 +22,9 @@ return {
                 "tailwindcss-language-server",
                 "dockerfile-language-server",
                 "docker-compose-language-service",
-
-                -- Formatters
                 "biome",
                 "prettier",
                 "stylua",
-
-                -- Linters
                 "eslint_d",
                 "ruff",
                 "hadolint",

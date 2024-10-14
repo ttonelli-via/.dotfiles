@@ -1,8 +1,10 @@
 return {
     "hrsh7th/nvim-cmp",
-    event = "InsertEnter",
+    event = { "InsertEnter", "CmdlineEnter" },
     dependencies = {
+        "windwp/nvim-autopairs",
         "hrsh7th/cmp-nvim-lsp",
+        "hrsh7th/cmp-buffer",
         "L3MON4D3/LuaSnip", -- snippet engine
         "saadparwaiz1/cmp_luasnip", -- for autocompletion
     },
@@ -11,8 +13,8 @@ return {
 
         local luasnip = require("luasnip")
 
-        -- load vs-code like snippets from plugins (e.g. friendly-snippets)
-        require("luasnip.loaders.from_vscode").lazy_load()
+        local cmp_autopairs = require("nvim-autopairs.completion.cmp")
+        cmp.event:on("confirm_done", cmp_autopairs.on_confirm_done())
 
         cmp.setup({
             window = {
@@ -28,9 +30,16 @@ return {
                 ["<C-p>"] = cmp.mapping.select_prev_item(),
                 ["<C-u>"] = cmp.mapping.scroll_docs(-4),
                 ["<C-d>"] = cmp.mapping.scroll_docs(4),
-                ["<CR>"] = cmp.mapping.confirm({
-                    behavior = cmp.ConfirmBehavior.Replace,
-                    select = true,
+                ["<C-y>"] = cmp.mapping({
+                    i = function(fallback)
+                        if cmp.visible() and cmp.get_active_entry() then
+                            cmp.confirm({ behavior = cmp.ConfirmBehavior.Replace, select = false })
+                        else
+                            fallback()
+                        end
+                    end,
+                    s = cmp.mapping.confirm({ select = true }),
+                    c = cmp.mapping.confirm({ behavior = cmp.ConfirmBehavior.Replace, select = true }),
                 }),
                 ["<Tab>"] = cmp.mapping(function(fallback)
                     if cmp.visible() then
@@ -52,9 +61,23 @@ return {
                 end, { "i", "s" }),
             }),
             sources = {
-                { name = "nvim_lsp" }, -- lsp
+                -- { name = "nvim_lsp" },
+                {
+                    name = "nvim_lsp",
+                    entry_filter = function(entry, _)
+                        local kind = require("cmp.types.lsp").CompletionItemKind[entry:get_kind()]
+                        return kind ~= "Text"
+                    end,
+                }, -- lsp
                 { name = "crates" }, -- rust crates
                 { name = "luasnip" }, -- snippets
+            },
+        })
+
+        cmp.setup.cmdline({ "/", "?" }, {
+            mapping = cmp.mapping.preset.cmdline(),
+            sources = {
+                { name = "buffer" },
             },
         })
     end,

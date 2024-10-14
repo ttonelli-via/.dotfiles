@@ -6,14 +6,12 @@ return {
             formatters_by_ft = {
                 lua = { "stylua" },
                 python = { "ruff_format" },
-                -- Conform will run multiple formatters sequentially
-                go = { "goimports", "gofmt" },
-                -- Use a sub-list to run only the first available formatter
+                go = { "goimports", "gofmt" }, -- Conform will run multiple formatters sequentially
                 javascript = { "prettier" },
                 typescript = { "prettier" },
                 javascriptreact = { "prettier" },
                 typescriptreact = { "prettier" },
-                astro = { "prettier" },
+                astro = { lsp_format = "prefer" },
                 css = { "prettier" },
                 html = { "prettier" },
                 json = { "prettier" },

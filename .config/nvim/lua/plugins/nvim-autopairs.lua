@@ -7,12 +7,8 @@ return {
         -- Configure default options
         ap.setup({
             enable_check_bracket_line = true,
+            -- map_cr = false,
         })
-
-        -- Automatically add `(` after selecting a function or method
-        -- local cmp_autopairs = require("nvim-autopairs.completion.cmp")
-        -- local cmp = require("cmp")
-        -- cmp.event:on("confirm_done", cmp_autopairs.on_confirm_done())
 
         local rule = require("nvim-autopairs.rule")
 
@@ -42,8 +38,5 @@ return {
                     :use_key(bracket[2]),
             })
         end
-
-        -- Rule for disabling autopairs for single quotes in rust files (lifetimes and byte strings)
-        -- ap.get_rule("'")[1].not_filetypes = { "rust" }
     end,
 }

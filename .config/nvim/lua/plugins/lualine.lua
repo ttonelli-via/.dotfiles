@@ -13,7 +13,10 @@ return {
         sections = {
             lualine_b = { { "branch", icon = "" } },
             lualine_c = {
-                { "filename", path = 1 }, -- relative from the directory nvim was opened in
+                {
+                    "filename",
+                    path = 1, -- relative from the directory nvim was opened in
+                },
             },
             lualine_x = {},
             lualine_y = { "filetype" },

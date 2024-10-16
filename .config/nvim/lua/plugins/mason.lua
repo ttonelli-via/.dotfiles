@@ -25,6 +25,7 @@ return {
                 "biome",
                 "prettier",
                 "stylua",
+                "goimports",
                 "eslint_d",
                 "ruff",
                 "hadolint",

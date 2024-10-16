@@ -54,7 +54,7 @@ export ZVM_VI_HIGHLIGHT_FOREGROUND=default
 export ZVM_VI_HIGHLIGHT_BACKGROUND="#44475a"
 
 # FZF settings
-zvm_after_init_commands+=('eval "$(fzf --zsh)"')
+zvm_after_init_commands+=('eval "$(fzf --zsh)"') # https://github.com/jeffreytse/zsh-vi-mode/issues/4 for context
 
 export FZF_COMPLETION_TRIGGER="**" # **<TAB> to trigger completions
 export FZF_COMPLETION_OPTS="

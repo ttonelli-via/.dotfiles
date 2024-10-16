@@ -46,7 +46,6 @@ return {
                 vim.keymap.set("n", "gi", vim.lsp.buf.implementation, { buffer = event.buf, desc = "[G]oto [I]mplementation" })
                 vim.keymap.set("n", "<leader>td", vim.lsp.buf.type_definition, { buffer = event.buf, desc = "[T]ype [D]efinition" })
                 vim.keymap.set("n", "<leader>rs", "<CMD>LspRestart<CR>", { buffer = event.buf, desc = "LSP [R]e[s]tart" })
-                vim.keymap.set("n", "K", vim.lsp.buf.hover, { buffer = event.buf, desc = "Hover Documentation" })
                 vim.keymap.set("i", "<C-h>", vim.lsp.buf.signature_help, { buffer = event.buf, desc = "Signature Documentation" })
                 vim.keymap.set("n", "<leader>ih", function()
                     vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
@@ -85,11 +84,12 @@ return {
                 })
             end,
 
+            -- Overrides for specific servers
             lua_ls = function()
                 lspconfig.lua_ls.setup({
                     capabilities = lsp_capabilities,
                     handlers = handlers,
-                    settings = {
+                    settings = { -- custom settings for lua
                         Lua = {
                             diagnostics = {
                                 globals = { "vim" },

@@ -5,11 +5,20 @@ return {
         "williamboman/mason-lspconfig.nvim",
         "hrsh7th/cmp-nvim-lsp",
         "j-hui/fidget.nvim",
-        { "folke/neodev.nvim", opts = {} },
+        {
+            "folke/lazydev.nvim",
+            ft = "lua",
+            opts = {
+                library = {
+                    -- See the configuration section for more details
+                    -- Load luvit types when the `vim.uv` word is found
+                    { path = "luvit-meta/library", words = { "vim%.uv" } },
+                },
+            },
+        },
+        { "Bilal2453/luvit-meta", lazy = true },
     },
     config = function()
-        require("neodev").setup() -- Configures lua_ls for writing Neovim configuration
-
         local lspconfig = require("lspconfig")
         local cmp_nvim_lsp = require("cmp_nvim_lsp")
 

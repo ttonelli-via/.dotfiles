@@ -1,8 +1,8 @@
 return {
-    "hrsh7th/nvim-cmp",
+    "yioneko/nvim-cmp",
+    branch = "perf",
     event = { "InsertEnter", "CmdlineEnter" },
     dependencies = {
-        "windwp/nvim-autopairs",
         "hrsh7th/cmp-nvim-lsp",
         "hrsh7th/cmp-buffer",
         "L3MON4D3/LuaSnip", -- snippet engine
@@ -12,9 +12,6 @@ return {
         local cmp = require("cmp")
 
         local luasnip = require("luasnip")
-
-        local cmp_autopairs = require("nvim-autopairs.completion.cmp")
-        cmp.event:on("confirm_done", cmp_autopairs.on_confirm_done())
 
         cmp.setup({
             window = {
@@ -30,7 +27,7 @@ return {
                 ["<C-p>"] = cmp.mapping.select_prev_item(),
                 ["<C-u>"] = cmp.mapping.scroll_docs(-4),
                 ["<C-d>"] = cmp.mapping.scroll_docs(4),
-                ["<C-y>"] = cmp.mapping({
+                ["<CR>"] = cmp.mapping({
                     i = function(fallback)
                         if cmp.visible() and cmp.get_active_entry() then
                             cmp.confirm({ behavior = cmp.ConfirmBehavior.Replace, select = false })

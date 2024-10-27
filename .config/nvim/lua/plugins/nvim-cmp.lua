@@ -27,17 +27,7 @@ return {
                 ["<C-p>"] = cmp.mapping.select_prev_item(),
                 ["<C-u>"] = cmp.mapping.scroll_docs(-4),
                 ["<C-d>"] = cmp.mapping.scroll_docs(4),
-                ["<CR>"] = cmp.mapping({
-                    i = function(fallback)
-                        if cmp.visible() and cmp.get_active_entry() then
-                            cmp.confirm({ behavior = cmp.ConfirmBehavior.Replace, select = false })
-                        else
-                            fallback()
-                        end
-                    end,
-                    s = cmp.mapping.confirm({ select = true }),
-                    c = cmp.mapping.confirm({ behavior = cmp.ConfirmBehavior.Replace, select = true }),
-                }),
+                ["<C-y>"] = cmp.mapping.confirm({ behavior = cmp.ConfirmBehavior.Replace, select = true }),
                 ["<Tab>"] = cmp.mapping(function(fallback)
                     if cmp.visible() then
                         cmp.select_next_item()

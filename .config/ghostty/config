@@ -12,6 +12,7 @@ background = "#292a35"
 palette = 8=#7c7f8a
 
 font-family = FiraCode Nerd Font
+font-synthetic-style = false
 
 # Disable ligatures
 font-feature = -calt

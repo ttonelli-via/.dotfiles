@@ -5,7 +5,6 @@ return {
         local oil = require("oil")
 
         oil.setup({
-            default_file_explorer = true,
             view_options = {
                 show_hidden = true,
             },
@@ -15,6 +14,6 @@ return {
             },
         })
 
-        vim.keymap.set("n", "-", oil.open_float, { desc = "Open parent directory of current buffer in a floating window" })
+        vim.keymap.set("n", "<C-f>", oil.toggle_float, { desc = "Toggle floating window" })
     end,
 }

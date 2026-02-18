@@ -1,0 +1,206 @@
+#!/usr/bin/env bash
+
+set -e
+
+CONTAINER_NAME="localproxy"
+IMAGE="public.ecr.aws/aws-iot-securetunneling-localproxy/ubuntu-bin:arm64-latest"
+PORT="5555"
+TUNNEL_ID_LABEL="iot.tunnel.id"
+
+usage() {
+    echo "Usage: $0 {status|open|close} [options]"
+    echo ""
+    echo "Commands:"
+    echo "  status        Check if the localproxy container is running"
+    echo "  open          Create a tunnel and start localproxy"
+    echo "  close         Close the tunnel and stop the container"
+    echo ""
+    echo "Options:"
+    echo "  --thing NAME  (open) IoT thing name to create tunnel for"
+    exit 1
+}
+
+check_jq() {
+    if ! command -v jq &>/dev/null; then
+        echo "Error: jq is required but not installed"
+        echo "Install with: brew install jq"
+        exit 1
+    fi
+}
+
+# Build profile args for AWS CLI if AWS_PROFILE is set
+aws_profile_args() {
+    if [ -n "${AWS_PROFILE:-}" ]; then
+        echo "--profile" "$AWS_PROFILE"
+    fi
+}
+
+get_aws_region() {
+    local region
+    # shellcheck disable=SC2046
+    region=$(aws configure get region $(aws_profile_args) 2>/dev/null)
+    if [ -z "$region" ]; then
+        echo "Error: No AWS region configured for the active profile" >&2
+        echo "Set a region with: aws configure set region <region>" >&2
+        return 1
+    fi
+    echo "$region"
+}
+
+start_container() {
+    local token="$1"
+    local tunnel_id="$2"
+
+    local region
+    if ! region=$(get_aws_region); then
+        exit 1
+    fi
+
+    # Remove existing container if it exists
+    if docker ps -a --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
+        echo "Removing existing container..."
+        docker rm -f "$CONTAINER_NAME" >/dev/null 2>&1 || true
+    fi
+
+    echo "Starting localproxy container..."
+
+    docker run -d \
+        --name "$CONTAINER_NAME" \
+        --label "${TUNNEL_ID_LABEL}=${tunnel_id}" \
+        -p "${PORT}:${PORT}" \
+        "$IMAGE" \
+        --region "$region" \
+        -b 0.0.0.0 \
+        -s "$PORT" \
+        --destination-client-type V1 \
+        -c /etc/ssl/certs \
+        -t "$token" >/dev/null
+
+    echo "Localproxy listening on port $PORT"
+}
+
+stop_container() {
+    echo "Stopping and removing container..."
+    docker rm -f "$CONTAINER_NAME" >/dev/null 2>&1 || true
+}
+
+status_container() {
+    local status
+    status=$(docker inspect -f '{{.State.Status}}' "$CONTAINER_NAME" 2>/dev/null || echo "not_found")
+
+    if [ "$status" = "running" ]; then
+        local uptime
+        uptime=$(docker ps --filter "name=^${CONTAINER_NAME}$" --format '{{.Status}}' | sed 's/Up //')
+        echo "Localproxy is running on port $PORT (up $uptime)"
+    else
+        echo "Localproxy is not running"
+        exit 1
+    fi
+}
+
+open_tunnel() {
+    local thing_name="$1"
+
+    # Validate thing name
+    if [ -z "$thing_name" ]; then
+        echo "Error: No thing name provided"
+        echo "Provide a thing name via --thing argument"
+        exit 1
+    fi
+
+    check_jq
+
+    echo "Creating tunnel for thing: $thing_name..."
+
+    # Create the tunnel
+    local response
+    set +e
+    # shellcheck disable=SC2046
+    response=$(aws iotsecuretunneling open-tunnel \
+        --destination-config "thingName=${thing_name},services=SSH" \
+        --output json \
+        $(aws_profile_args) 2>&1)
+    local rc=$?
+    set -e
+
+    if [ $rc -ne 0 ]; then
+        echo "Error: Failed to create tunnel"
+        echo "$response"
+        exit 1
+    fi
+
+    # Extract token and tunnel ID
+    local token
+    local tunnel_id
+    token=$(echo "$response" | jq -r '.sourceAccessToken')
+    tunnel_id=$(echo "$response" | jq -r '.tunnelId')
+
+    if [ -z "$token" ] || [ "$token" = "null" ]; then
+        echo "Error: Failed to create tunnel"
+        echo "$response"
+        exit 1
+    fi
+
+    echo "Tunnel created: $tunnel_id"
+
+    # Start container with tunnel ID label
+    start_container "$token" "$tunnel_id"
+}
+
+close_tunnel() {
+    # Get tunnel ID from container label
+    local tunnel_id
+    tunnel_id=$(docker inspect -f "{{index .Config.Labels \"${TUNNEL_ID_LABEL}\"}}" "$CONTAINER_NAME" 2>/dev/null || echo "")
+
+    if [ -n "$tunnel_id" ] && [ "$tunnel_id" != "<no value>" ]; then
+        echo "Closing tunnel: $tunnel_id..."
+        # shellcheck disable=SC2046
+        aws iotsecuretunneling close-tunnel --tunnel-id "$tunnel_id" --delete $(aws_profile_args) 2>/dev/null || true
+    else
+        echo "No tunnel ID found on container, skipping tunnel close"
+    fi
+
+    stop_container
+}
+
+# Parse arguments
+if [ $# -lt 1 ]; then
+    usage
+fi
+
+COMMAND="$1"
+THING_NAME=""
+
+shift
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --thing)
+            if [ -z "$2" ] || [[ "$2" == --* ]]; then
+                echo "Error: --thing requires a value"
+                exit 1
+            fi
+            THING_NAME="$2"
+            shift
+            ;;
+        *)
+            echo "Unknown option: $1"
+            usage
+            ;;
+    esac
+    shift
+done
+
+case "$COMMAND" in
+    status)
+        status_container
+        ;;
+    open)
+        open_tunnel "$THING_NAME"
+        ;;
+    close)
+        close_tunnel
+        ;;
+    *)
+        usage
+        ;;
+esac

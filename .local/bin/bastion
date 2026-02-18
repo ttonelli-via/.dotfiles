@@ -1,0 +1,441 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# =============================================================================
+# EARLY VALIDATION
+#
+# Self-escalate to root if needed, preserving environment
+# =============================================================================
+
+if [[ $EUID -ne 0 ]]; then
+  exec sudo -E "$0" "$@"
+fi
+
+if [[ -z "${SUDO_USER:-}" ]]; then
+  echo "error: SUDO_USER not set - must run via sudo, not as root directly" >&2
+  exit 1
+fi
+
+# =============================================================================
+# CONSTANTS
+# =============================================================================
+
+USER_HOME=$(eval echo "~$SUDO_USER")
+STATE_DIR="$USER_HOME/.local/state/bastion"
+
+# =============================================================================
+# CONFIGURATION
+#
+# Profile -> SSH key mappings. Add new profiles to the case statement and
+# list_profiles function.
+# =============================================================================
+
+get_key_path() {
+  local profile="$1"
+  case "$profile" in
+    mt-lead-prd)
+      echo "$USER_HOME/.ssh/platform-services-prd-ec2-ssm.pem"
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
+list_profiles() {
+  echo "  - mt-lead-prd"
+}
+
+# =============================================================================
+# UTILITIES
+# =============================================================================
+
+# Print error message to stderr and exit with code 1
+die() {
+  echo "error: $1" >&2
+  exit 1
+}
+
+# Print progress message to stderr
+log() {
+  echo "$1" >&2
+}
+
+# Die if AWS_PROFILE is not set or not recognized
+require_profile() {
+  if [[ -z "${AWS_PROFILE:-}" ]]; then
+    die "AWS_PROFILE is not set (use: sudo -E bastion ... to preserve env)"
+  fi
+
+  if ! get_key_path "$AWS_PROFILE" >/dev/null 2>&1; then
+    echo "error: unknown profile '$AWS_PROFILE'" >&2
+    echo "available profiles:" >&2
+    list_profiles >&2
+    exit 1
+  fi
+}
+
+# =============================================================================
+# STATE MANAGEMENT
+#
+# State is stored in a single file per profile: $STATE_DIR/$AWS_PROFILE.state
+# Format is simple key=value pairs, one per line.
+# =============================================================================
+
+state_file() {
+  echo "$STATE_DIR/$AWS_PROFILE.state"
+}
+
+# Read a value from the state file
+# Usage: read_state <key>
+# Returns 1 if file missing or key not found
+read_state() {
+  local key="$1"
+  local file
+  file=$(state_file)
+
+  if [[ ! -f "$file" ]]; then
+    return 1
+  fi
+
+  local line
+  line=$(grep "^${key}=" "$file" 2>/dev/null) || return 1
+  echo "${line#*=}"
+}
+
+# Write a key=value pair to the state file
+# Creates the file and directory if needed
+# Usage: write_state <key> <value>
+write_state() {
+  local key="$1"
+  local value="$2"
+  local file
+  file=$(state_file)
+
+  mkdir -p "$STATE_DIR"
+
+  if [[ -f "$file" ]] && grep -q "^${key}=" "$file" 2>/dev/null; then
+    # Key exists - replace it (using temp file for atomicity)
+    local tmp="$file.tmp"
+    grep -v "^${key}=" "$file" > "$tmp" || true
+    echo "${key}=${value}" >> "$tmp"
+    mv "$tmp" "$file"
+  else
+    # Key doesn't exist - append
+    echo "${key}=${value}" >> "$file"
+  fi
+}
+
+# Remove the state file
+clear_state() {
+  local file
+  file=$(state_file)
+  rm -f "$file"
+}
+
+# Get the PID from state, validating the process is still alive
+# Echoes the PID if valid, returns 1 if missing or stale
+get_pid() {
+  local pid
+  pid=$(read_state "pid") || return 1
+
+  if kill -0 "$pid" 2>/dev/null; then
+    echo "$pid"
+    return 0
+  else
+    # Process is dead - clean up stale state
+    clear_state
+    return 1
+  fi
+}
+
+# Check if the tunnel is currently running
+# Returns 0 if running, 1 if not
+is_running() {
+  get_pid >/dev/null 2>&1
+}
+
+# =============================================================================
+# AWS HELPERS
+# =============================================================================
+
+# Fetch the bastion host instance ID
+# Dies on AWS error or if number of instances != 1
+fetch_instance_id() {
+  log "fetching instance id..."
+
+  local output
+  if ! output=$(aws ec2 describe-instances \
+    --filters "Name=tag:via:operations:application,Values=bastion-host" \
+    --query "Reservations[*].Instances[*].InstanceId" \
+    --output text 2>&1); then
+    die "AWS error: $output"
+  fi
+
+  if [[ -z "$output" ]]; then
+    die "no bastion host instance found"
+  fi
+
+  # Check for multiple instances (output is whitespace-separated)
+  local count
+  count=$(echo "$output" | wc -w | tr -d ' ')
+
+  if [[ "$count" -ne 1 ]]; then
+    die "expected 1 bastion host, found $count: $output"
+  fi
+
+  echo "$output"
+}
+
+# Fetch the VPC CIDR block
+# Dies on AWS error or if not found
+fetch_cidr() {
+  log "fetching cidr block..."
+
+  local output
+  if ! output=$(aws ec2 describe-vpcs \
+    --query "Vpcs[?Tags[?Key=='epic' && Value!='']].CidrBlock" \
+    --output text 2>&1); then
+    die "AWS error: $output"
+  fi
+
+  if [[ -z "$output" ]]; then
+    die "no VPC CIDR block found"
+  fi
+
+  echo "$output"
+}
+
+# =============================================================================
+# TUNNEL MANAGEMENT
+# =============================================================================
+
+# Start the sshuttle tunnel in daemon mode
+# Arguments: <instance_id> <cidr> <key_path>
+# Returns 0 on success, 1 on failure
+# On failure, outputs the error message
+start_tunnel() {
+  local instance_id="$1"
+  local cidr="$2"
+  local key_path="$3"
+
+  local pid_file="$STATE_DIR/$AWS_PROFILE.sshuttle.pid"
+  local ssh_cmd="ssh -F $USER_HOME/.ssh/config -i $key_path"
+
+  log "starting tunnel..."
+
+  local output
+  if output=$(sshuttle \
+    --daemon \
+    --pidfile="$pid_file" \
+    -r "$instance_id" "$cidr" \
+    --ssh-cmd "$ssh_cmd" 2>&1); then
+    return 0
+  else
+    echo "$output"
+    return 1
+  fi
+}
+
+# Verify the tunnel started successfully
+# Waits briefly then checks if the process is alive
+# Returns 0 if running, 1 if not
+verify_tunnel() {
+  log "verifying tunnel..."
+
+  sleep 2
+
+  local pid_file="$STATE_DIR/$AWS_PROFILE.sshuttle.pid"
+
+  if [[ ! -f "$pid_file" ]]; then
+    return 1
+  fi
+
+  local pid
+  pid=$(cat "$pid_file")
+
+  if kill -0 "$pid" 2>/dev/null; then
+    # Store the PID in our state file
+    write_state "pid" "$pid"
+    return 0
+  else
+    return 1
+  fi
+}
+
+# Stop the tunnel process
+# Arguments: <pid>
+# Sends SIGTERM, waits up to 1 second, then SIGKILL if needed
+stop_tunnel() {
+  local pid="$1"
+
+  kill "$pid" 2>/dev/null || true
+
+  # Wait for process to exit
+  local i
+  for i in 1 2 3 4 5 6 7 8 9 10; do
+    if ! kill -0 "$pid" 2>/dev/null; then
+      return 0
+    fi
+    sleep 0.1
+  done
+
+  # Force kill if still running
+  kill -9 "$pid" 2>/dev/null || true
+  return 0
+}
+
+# Apply the pfctl fix for "no route to host" errors on macOS
+apply_pfctl_fix() {
+  log "applying pfctl fix for 'no route to host'..."
+  pfctl -f /etc/pf.conf 2>/dev/null || true
+}
+
+# =============================================================================
+# COMMANDS
+# =============================================================================
+
+cmd_up() {
+  if is_running; then
+    log "already connected for profile '$AWS_PROFILE'"
+    log "use 'bastion status' for details or 'bastion down' to disconnect"
+    return 0
+  fi
+
+  # Validate SSH key exists
+  local key_path
+  key_path=$(get_key_path "$AWS_PROFILE")
+
+  if [[ ! -f "$key_path" ]]; then
+    die "ssh key not found: $key_path"
+  fi
+
+  # Fetch AWS metadata
+  local instance_id cidr
+  instance_id=$(fetch_instance_id)
+  cidr=$(fetch_cidr)
+
+  log "connecting to $instance_id ($cidr)..."
+
+  # Ensure state directory exists
+  mkdir -p "$STATE_DIR"
+
+  # Start tunnel with retry on "no route to host"
+  local output
+  if ! output=$(start_tunnel "$instance_id" "$cidr" "$key_path"); then
+    if echo "$output" | grep -qi "no route to host"; then
+      apply_pfctl_fix
+      log "retrying connection..."
+      if ! output=$(start_tunnel "$instance_id" "$cidr" "$key_path"); then
+        log "$output"
+        die "tunnel failed to start after pfctl fix"
+      fi
+    else
+      log "$output"
+      die "tunnel failed to start"
+    fi
+  fi
+
+  # Verify tunnel is actually running
+  if ! verify_tunnel; then
+    clear_state
+    die "tunnel process exited unexpectedly"
+  fi
+
+  # Write remaining state
+  write_state "instance_id" "$instance_id"
+  write_state "cidr" "$cidr"
+  write_state "started_at" "$(date -Iseconds)"
+
+  log "connected"
+  return 0
+}
+
+cmd_down() {
+  local pid
+  if ! pid=$(get_pid); then
+    log "not connected for profile '$AWS_PROFILE'"
+    return 0
+  fi
+
+  log "stopping tunnel (pid $pid)..."
+  stop_tunnel "$pid"
+  clear_state
+
+  # Also clean up sshuttle's pid file
+  rm -f "$STATE_DIR/$AWS_PROFILE.sshuttle.pid"
+
+  log "disconnected"
+  return 0
+}
+
+cmd_restart() {
+  if is_running; then
+    cmd_down
+  fi
+  cmd_up
+}
+
+cmd_status() {
+  if ! is_running; then
+    echo "disconnected"
+    return 1
+  fi
+
+  echo "connected"
+  echo ""
+
+  # Pretty-print state
+  local instance_id cidr started_at
+  instance_id=$(read_state "instance_id" || echo "unknown")
+  cidr=$(read_state "cidr" || echo "unknown")
+  started_at=$(read_state "started_at" || echo "unknown")
+
+  printf "  %-12s %s\n" "profile:" "$AWS_PROFILE"
+  printf "  %-12s %s\n" "instance:" "$instance_id"
+  printf "  %-12s %s\n" "cidr:" "$cidr"
+  printf "  %-12s %s\n" "started_at:" "$started_at"
+
+  return 0
+}
+
+cmd_help() {
+  cat <<EOF
+usage: bastion <command>
+
+commands:
+  up       start connection in background
+  down     stop connection
+  restart  stop and start connection
+  status   check connection status
+
+requires AWS_PROFILE to be set
+EOF
+}
+
+# =============================================================================
+# MAIN
+# =============================================================================
+
+main() {
+  local cmd="${1:-}"
+
+  case "$cmd" in
+    up|down|restart|status)
+      require_profile
+      "cmd_$cmd"
+      ;;
+    help|--help|-h)
+      cmd_help
+      ;;
+    "")
+      cmd_help
+      exit 1
+      ;;
+    *)
+      die "unknown command: $cmd"
+      ;;
+  esac
+}
+
+main "$@"

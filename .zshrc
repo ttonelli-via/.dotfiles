@@ -116,6 +116,7 @@ export _ZO_FZF_OPTS="$FZF_DEFAULT_OPTS"
 # path per session, so this MUST run in every shell (not .zprofile).
 eval "$(fnm env --use-on-cd)"
 
+eval "$(pyenv init --path)"
 eval "$(zoxide init zsh --cmd cd)"
 
 # Starship prompt — must be last so it can wrap any existing hooks.

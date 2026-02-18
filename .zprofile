@@ -4,3 +4,6 @@ export PATH="$HOME/.local/bin:$PATH"
 
 # Cargo
 export PATH="$HOME/.cargo/bin:$PATH"
+
+# Krew
+export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"

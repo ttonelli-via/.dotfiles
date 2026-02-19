@@ -1,0 +1,23 @@
+gemfury() {
+  if [[ -z "$GEMFURY_TOKEN" ]]; then
+    local token
+    if ! token=$(aws secretsmanager get-secret-value \
+        --profile mt-lead-dev \
+        --region ca-central-1 \
+        --secret-id arn:aws:secretsmanager:ca-central-1:977445517197:secret:gemfury_read_only_token-vDqyeo \
+        --query SecretString \
+        --output text 2>&1); then
+      echo "gemfury: AWS error: $token" >&2
+      return 1
+    fi
+
+    if ! token=$(echo "$token" | jq -re .data 2>&1); then
+      echo "gemfury: failed to parse secret: $token" >&2
+      return 1
+    fi
+
+    export GEMFURY_TOKEN="$token"
+  fi
+
+  echo "$GEMFURY_TOKEN"
+}

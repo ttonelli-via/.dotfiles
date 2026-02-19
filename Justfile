@@ -1,4 +1,3 @@
-dotfiles := file_name(justfile_directory())
 home := env("HOME")
 
 [default]
@@ -7,23 +6,23 @@ help:
 
 # Link dotfiles to home
 link:
-    stow -d {{ home }} -t {{ home }} {{ dotfiles }}
+    stow -t {{ home }} .
 
 # Preview what link would do
 preview-link:
-    stow -d {{ home }} -t {{ home }} --no --verbose {{ dotfiles }}
+    stow -t {{ home }} --no --verbose .
 
 # Unlink dotfiles from home
 unlink:
-    stow -d {{ home }} -t {{ home }} -D {{ dotfiles }}
+    stow -t {{ home }} -D .
 
 # Restow (cleans stale symlinks)
 relink:
-    stow -d {{ home }} -t {{ home }} -R {{ dotfiles }}
+    stow -t {{ home }} -R .
 
 # Adopt existing files into repo
 adopt:
-    stow -d {{ home }} -t {{ home }} --adopt {{ dotfiles }}
+    stow -t {{ home }} --adopt .
     @echo "⚠ Review changes: just diff"
 
 # Show uncommitted changes

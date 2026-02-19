@@ -4,5 +4,7 @@
 ^/README.*
 ^/LICENSE.*
 ^/COPYING
+^/Justfile
+^/AGENTS.md
 
 .DS_Store
